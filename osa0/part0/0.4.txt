@@ -1,0 +1,8 @@
+title fullstackopen 0.4
+
+selain->palvelin: POST new_note
+palvelin->selain: 302
+selain->palvelin: GET notes
+selain->palvelin: GET main.css
+selain->palvelin: GET main.js
+selain->palvelin: GET data.json

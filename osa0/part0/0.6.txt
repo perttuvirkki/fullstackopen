@@ -1,0 +1,4 @@
+title fullstackopen 0.6
+
+selain->palvelin: POST new_note_spa
+palvelin-->selain: 201 created

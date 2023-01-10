@@ -1,0 +1,10 @@
+title fullstackopen 0.5
+
+selain->palvelin: GET spa
+palvelin-->selain: text/html
+selain->palvelin: GET main.css
+palvelin-->selain: text/css
+selain->palvelin: GET spa.js
+palvelin-->selain: app/js
+selain->palvelin: GET data.json
+palvelin-->selain: app/json
