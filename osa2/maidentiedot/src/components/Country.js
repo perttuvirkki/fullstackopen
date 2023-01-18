@@ -9,7 +9,7 @@ const Country = ({ filteredCountries }) => {
   useEffect(() => {
     axios
       .get(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${filteredCountries.capitalInfo.latlng[0]}&lon=${filteredCountries.capitalInfo.latlng[1]}&appid=6efe524091801a72439fc46ae445a5fd`
+        `https://api.openweathermap.org/data/2.5/weather?lat=${filteredCountries.capitalInfo.latlng[0]}&lon=${filteredCountries.capitalInfo.latlng[1]}&appid=${process.env.REACT_APP_WEATHER_API_KEY}`
       )
       .then((response) => {
         setTemp(response.data.main.temp);
