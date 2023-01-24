@@ -1,4 +1,5 @@
 import { useState } from "react";
+import numberService from "../services/numberServices";
 
 const Add = ({ persons, setPersons }) => {
   const [newName, setNewName] = useState("");
@@ -15,7 +16,11 @@ const Add = ({ persons, setPersons }) => {
     if (duplicatecheck.includes(newName)) {
       alert(`${newName} is already added to phonebook`);
     } else {
-      setPersons(persons.concat(nameObject));
+      numberService.create(nameObject).then((returnedName) => {
+        setPersons(persons.concat(returnedName));
+        setNewName("");
+        setNewNumber("");
+      });
     }
     setNewName("");
     console.log(duplicatecheck);
