@@ -1,6 +1,6 @@
 const Person = ({ person, handleDelete }) => {
   const handleClick = () => {
-    handleDelete(person.id);
+    handleDelete(person.id, person.name);
   };
 
   return (

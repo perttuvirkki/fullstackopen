@@ -36,15 +36,24 @@ const Add = ({ persons, setPersons, setMessage, setErrorMessage }) => {
         });
       }
     } else {
-      numberService.create(nameObject).then((returnedName) => {
-        setPersons(persons.concat(returnedName));
-        setNewName("");
-        setNewNumber("");
-        setMessage(`Added ${nameObject.name}`);
-        setTimeout(() => {
-          setMessage(null);
-        }, 5000);
-      });
+      numberService
+        .create(nameObject)
+        .then((createdPerson) => {
+          setPersons(persons.concat(createdPerson));
+          setNewName("");
+          setNewNumber("");
+          setMessage(`Added ${nameObject.name}`);
+          setTimeout(() => {
+            setMessage(null);
+          }, 5000);
+        })
+        .catch((error) => {
+          console.log("frontend: ", error.response.data.error);
+          setErrorMessage(error.response.data.error);
+          setTimeout(() => {
+            setErrorMessage(null);
+          }, 5000);
+        });
     }
     setNewName("");
     setNewNumber("");

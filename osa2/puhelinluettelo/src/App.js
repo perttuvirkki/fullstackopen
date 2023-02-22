@@ -14,13 +14,12 @@ const App = () => {
     numberService.getAll().then((initialPersons) => {
       setPersons(initialPersons);
     });
-    console.log("persons modified");
   }, []);
 
-  const handleDelete = (id) => {
+  const handleDelete = (id, name) => {
     const person = persons.find((p) => p.id === id);
 
-    if (window.confirm(`Do you want to delete ${id} ?`)) {
+    if (window.confirm(`Do you want to delete ${name} ?`)) {
       numberService
         .deletePerson(id)
         .then(() => {
