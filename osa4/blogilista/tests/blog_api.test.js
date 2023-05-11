@@ -4,12 +4,28 @@ const app = require("../app");
 const api = supertest(app);
 
 const Blog = require("../models/blog");
+const User = require("../models/user");
 const helper = require("./test_helper");
-jest.setTimeout(20000);
+const bcrypt = require("bcrypt");
+
+jest.setTimeout(15000);
+
+const newUser = {
+  username: "tester",
+  name: "test user",
+  password: "test",
+};
+
+const newBlog = {
+  title: "this is a test",
+  author: "tester",
+  url: "testing.com",
+};
 
 beforeEach(async () => {
   await Blog.deleteMany({});
   await Blog.insertMany(helper.initialBlogs);
+  await User.deleteMany({});
 });
 
 test("blogs are returned as json", async () => {
@@ -31,20 +47,27 @@ test("id is id", async () => {
   response.body.forEach((item) => expect(item.id).toBeDefined());
 });
 
-// 4.10
+// 4.23
 
 test("a blog can be added", async () => {
-  const newBlog = {
-    title: "this is a test",
-    author: "tester",
-    url: "testing.com",
-    likes: 77,
-  };
+  await api
+    .post("/api/users")
+    .set("Content-Type", "application/json")
+    .send(newUser)
+    .expect(201);
+
+  const user = { username: "tester", password: "test" };
+
+  const result = await api.post("/api/login").send(user);
+
+  let { token } = result.body;
+  token = `Bearer ${token}`;
 
   await api
     .post("/api/blogs")
+    .set("Authorization", token)
     .send(newBlog)
-    .expect(201)
+    .expect(200)
     .expect("Content-Type", /application\/json/);
 
   const response = await api.get("/api/blogs");
@@ -55,25 +78,56 @@ test("a blog can be added", async () => {
   expect(contents).toContain("this is a test");
 });
 
-// 4.11
+// 4.23
 
-test("likes default value", async () => {
+test("return new blog unauthorized without token", async () => {
+  await api
+    .post("/api/users")
+    .set("Content-Type", "application/json")
+    .send(newUser)
+    .expect(201);
+
   const newBlog = {
-    title: "huutisblogi",
-    author: "testhuut",
-    url: "huut.com",
+    title: "this is a test",
+    author: "tester",
+    url: "testing.com",
+    likes: 77,
   };
 
   await api
     .post("/api/blogs")
     .send(newBlog)
-    .expect(201)
+    .expect(401)
+    .expect("Content-Type", /application\/json/);
+});
+
+// 4.11
+
+test("likes default value", async () => {
+  await api
+    .post("/api/users")
+    .set("Content-Type", "application/json")
+    .send(newUser)
+    .expect(201);
+
+  const user = { username: "tester", password: "test" };
+
+  const result = await api.post("/api/login").send(user);
+
+  let { token } = result.body;
+  token = `Bearer ${token}`;
+
+  await api
+    .post("/api/blogs")
+    .set("Authorization", token)
+    .send(newBlog)
+    .expect(200)
     .expect("Content-Type", /application\/json/);
 
   const response = await api.get("/api/blogs");
-  console.log(response.body[response.length - 1]);
-
-  expect(response).toBe(0);
+  console.log(response.body[response.body.length - 1]);
+  let addedBlog = response.body[response.body.length - 1];
+  expect(addedBlog.likes).toBe(0);
 });
 
 // 4.12
@@ -84,25 +138,58 @@ test("no title, bad request", async () => {
     url: "huut.com",
   };
 
-  await api.post("/api/blogs").send(newBlog).expect(400);
+  await api
+    .post("/api/users")
+    .set("Content-Type", "application/json")
+    .send(newUser)
+    .expect(201);
+
+  const user = { username: "tester", password: "test" };
+
+  const result = await api.post("/api/login").send(user);
+
+  let { token } = result.body;
+  token = `Bearer ${token}`;
+
+  await api
+    .post("/api/blogs")
+    .set("Authorization", token)
+    .send(newBlog)
+    .expect(400);
 });
 
 //4.13
 
 test("a blog can be deleted", async () => {
-  const blogsAtStart = await helper.blogsInDb();
-  const blogToDelete = blogsAtStart[0];
+  await api
+    .post("/api/users")
+    .set("Content-Type", "application/json")
+    .send(newUser)
+    .expect(201);
 
-  console.log(blogsAtStart);
-  await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+  const user = { username: "tester", password: "test" };
+  const result = await api.post("/api/login").send(user);
+  let { token } = result.body;
+  token = `Bearer ${token}`;
 
-  const blogsAtEnd = await helper.blogsInDb();
+  const newPostResult = await api
+    .post("/api/blogs")
+    .set("Authorization", token)
+    .send(newBlog)
+    .expect(200)
+    .expect("Content-Type", /application\/json/);
 
-  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length - 1);
+  const blogId = newPostResult.body.id;
 
-  const contents = blogsAtEnd.map((r) => r.title);
+  await api
+    .delete(`/api/blogs/${blogId}`)
+    .set("Authorization", token)
+    .expect(204);
 
-  expect(contents).not.toContainEqual(blogToDelete.title);
+  const response = await api.get("/api/blogs");
+  const contents = response.body.map((b) => b.title);
+  expect(response.body).toHaveLength(helper.initialBlogs.length);
+  expect(contents).not.toContain("this is a test");
 });
 
 //4.14
