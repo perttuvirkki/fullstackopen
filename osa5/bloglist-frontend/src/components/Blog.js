@@ -2,11 +2,9 @@ import React, { useState } from "react";
 
 const Blog = ({ blog, likeBlog, removeBlog, loggedInUser }) => {
   const blogStyle = {
-    paddingTop: 10,
-    paddingLeft: 2,
-    border: "solid",
-    borderWidth: 1,
-    marginBottom: 5,
+    marginBottom: 2,
+    padding: 5,
+    borderStyle: "solid",
   };
 
   const [showInfo, setShowInfo] = useState(false);

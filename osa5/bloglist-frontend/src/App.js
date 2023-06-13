@@ -98,7 +98,7 @@ const App = () => {
 
   const likeBlog = (id) => {
     const blog = blogs.find((n) => n.id === id);
-    const likedBlog = { ...blog, likes: blog.likes + 1 };
+    const likedBlog = { ...blog, likes: blog.likes + 1, user: blog.user.id };
 
     blogService
       .update(id, likedBlog)
@@ -112,7 +112,7 @@ const App = () => {
         setTimeout(() => {
           setErrorMessage(null);
         }, 5000);
-        setBlogs(blogs.filter((n) => n.id !== id));
+        setBlogs(blogs.map((b) => (b.id === blog.id ? likedBlog : b)));
       });
   };
 

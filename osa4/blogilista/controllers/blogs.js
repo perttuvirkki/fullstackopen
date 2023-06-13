@@ -55,21 +55,18 @@ blogsRouter.delete(
   }
 );
 
-blogsRouter.put("/:id", (request, response, next) => {
-  const body = request.body;
+blogsRouter.put("/:id", async (request, response) => {
+  const { title, url, author, likes } = request.body;
 
-  const blog = {
-    title: body.title,
-    author: body.author,
-    url: body.url,
-    likes: body.likes,
-  };
+  let updatedBlog = await Blog.findByIdAndUpdate(
+    request.params.id,
+    { title, url, author, likes },
+    { new: true }
+  );
 
-  Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
-    .then((updatedBlog) => {
-      response.json(updatedBlog);
-    })
-    .catch((error) => next(error));
+  updatedBlog = await Blog.findById(updatedBlog._id).populate("user");
+
+  response.json(updatedBlog);
 });
 
 module.exports = blogsRouter;
